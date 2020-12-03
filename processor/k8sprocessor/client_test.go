@@ -28,11 +28,12 @@ import (
 
 // fakeClient is used as a replacement for WatchClient in test cases.
 type fakeClient struct {
-	Pods     map[string]*kube.Pod
-	Rules    kube.ExtractionRules
-	Filters  kube.Filters
-	Informer cache.SharedInformer
-	StopCh   chan struct{}
+	Pods         map[string]*kube.Pod
+	Rules        kube.ExtractionRules
+	Filters      kube.Filters
+	Associations kube.Associations
+	Informer     cache.SharedInformer
+	StopCh       chan struct{}
 }
 
 func selectors() (labels.Selector, fields.Selector) {
@@ -41,7 +42,7 @@ func selectors() (labels.Selector, fields.Selector) {
 }
 
 // newFakeClient instantiates a new FakeClient object and satisfies the ClientProvider type
-func newFakeClient(_ *zap.Logger, apiCfg k8sconfig.APIConfig, rules kube.ExtractionRules, filters kube.Filters, _ kube.APIClientsetProvider, _ kube.InformerProvider) (kube.Client, error) {
+func newFakeClient(_ *zap.Logger, apiCfg k8sconfig.APIConfig, rules kube.ExtractionRules, filters kube.Filters, associations kube.Associations, _ kube.APIClientsetProvider, _ kube.InformerProvider) (kube.Client, error) {
 	cs, err := newFakeAPIClientset(apiCfg)
 	if err != nil {
 		return nil, err
@@ -49,11 +50,12 @@ func newFakeClient(_ *zap.Logger, apiCfg k8sconfig.APIConfig, rules kube.Extract
 
 	ls, fs := selectors()
 	return &fakeClient{
-		Pods:     map[string]*kube.Pod{},
-		Rules:    rules,
-		Filters:  filters,
-		Informer: kube.NewFakeInformer(cs, "", ls, fs),
-		StopCh:   make(chan struct{}),
+		Pods:         map[string]*kube.Pod{},
+		Rules:        rules,
+		Filters:      filters,
+		Associations: associations,
+		Informer:     kube.NewFakeInformer(cs, "", ls, fs),
+		StopCh:       make(chan struct{}),
 	}, nil
 }
 

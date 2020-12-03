@@ -52,7 +52,7 @@ type Client interface {
 }
 
 // ClientProvider defines a func type that returns a new Client.
-type ClientProvider func(*zap.Logger, k8sconfig.APIConfig, ExtractionRules, Filters, APIClientsetProvider, InformerProvider) (Client, error)
+type ClientProvider func(*zap.Logger, k8sconfig.APIConfig, ExtractionRules, Filters, Associations, APIClientsetProvider, InformerProvider) (Client, error)
 
 // APIClientsetProvider defines a func type that initializes and return a new kubernetes
 // Clientset object.
@@ -124,4 +124,13 @@ type FieldExtractionRule struct {
 	// Regex is a regular expression used to extract a sub-part of a field value.
 	// Full value is extracted when no regexp is provided.
 	Regex *regexp.Regexp
+}
+
+type Associations struct {
+	Associations []Association
+}
+
+type Association struct {
+	From string
+	Name string
 }

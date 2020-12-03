@@ -45,9 +45,10 @@ type WatchClient struct {
 	deleteQueue     []deleteRequest
 	stopCh          chan struct{}
 
-	Pods    map[string]*Pod
-	Rules   ExtractionRules
-	Filters Filters
+	Pods         map[string]*Pod
+	Rules        ExtractionRules
+	Filters      Filters
+	Associations Associations
 }
 
 // Extract deployment name from the pod name. Pod name is created using
@@ -55,8 +56,8 @@ type WatchClient struct {
 var dRegex = regexp.MustCompile(`^(.*)-[0-9a-zA-Z]*-[0-9a-zA-Z]*$`)
 
 // New initializes a new k8s Client.
-func New(logger *zap.Logger, apiCfg k8sconfig.APIConfig, rules ExtractionRules, filters Filters, newClientSet APIClientsetProvider, newInformer InformerProvider) (Client, error) {
-	c := &WatchClient{logger: logger, Rules: rules, Filters: filters, deploymentRegex: dRegex, stopCh: make(chan struct{})}
+func New(logger *zap.Logger, apiCfg k8sconfig.APIConfig, rules ExtractionRules, filters Filters, associations Associations, newClientSet APIClientsetProvider, newInformer InformerProvider) (Client, error) {
+	c := &WatchClient{logger: logger, Rules: rules, Filters: filters, Associations: associations, deploymentRegex: dRegex, stopCh: make(chan struct{})}
 	go c.deleteLoop(time.Second*30, defaultPodDeleteGracePeriod)
 
 	c.Pods = map[string]*Pod{}
@@ -253,21 +254,8 @@ func (c *WatchClient) extractField(v string, r FieldExtractionRule) string {
 }
 
 func (c *WatchClient) addOrUpdatePod(pod *api_v1.Pod) {
-	if pod.Status.PodIP == "" {
-		return
-	}
-
 	c.m.Lock()
 	defer c.m.Unlock()
-	// compare initial scheduled timestamp for existing pod and new pod with same IP
-	// and only replace old pod if scheduled time of new pod is newer? This should fix
-	// the case where scheduler has assigned the same IP to a new pod but update event for
-	// the old pod came in later
-	if p, ok := c.Pods[pod.Status.PodIP]; ok {
-		if p.StartTime != nil && pod.Status.StartTime.Before(p.StartTime) {
-			return
-		}
-	}
 	newPod := &Pod{
 		Name:      pod.Name,
 		Address:   pod.Status.PodIP,
@@ -279,7 +267,21 @@ func (c *WatchClient) addOrUpdatePod(pod *api_v1.Pod) {
 	} else {
 		newPod.Attributes = c.extractPodAttributes(pod)
 	}
-	c.Pods[pod.Status.PodIP] = newPod
+	if pod.Status.PodIP != "" {
+		// compare initial scheduled timestamp for existing pod and new pod with same IP
+		// and only replace old pod if scheduled time of new pod is newer? This should fix
+		// the case where scheduler has assigned the same IP to a new pod but update event for
+		// the old pod came in later
+		func() {
+			if p, ok := c.Pods[pod.Status.PodIP]; ok {
+				if p.StartTime != nil && pod.Status.StartTime.Before(p.StartTime) {
+					return
+				}
+			}
+			c.Pods[pod.Status.PodIP] = newPod
+		}()
+	}
+	c.Pods[string(pod.UID)] = newPod
 }
 
 func (c *WatchClient) forgetPod(pod *api_v1.Pod) {

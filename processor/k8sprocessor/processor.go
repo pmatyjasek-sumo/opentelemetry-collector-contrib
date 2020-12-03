@@ -17,7 +17,6 @@ package k8sprocessor
 import (
 	"context"
 
-	"go.opentelemetry.io/collector/client"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/consumer/pdata"
 	"go.uber.org/zap"
@@ -27,8 +26,11 @@ import (
 )
 
 const (
-	k8sIPLabelName    string = "k8s.pod.ip"
-	clientIPLabelName string = "ip"
+	k8sIPLabelName     string = "k8s.pod.ip"
+	k8sPodUIDLabelName string = "k8s.pod.uid"
+	podUIDLabelName    string = "pod_uid"
+	clientIPLabelName  string = "ip"
+	hostnameLabelName  string = "host.hostname"
 )
 
 type kubernetesprocessor struct {
@@ -38,6 +40,7 @@ type kubernetesprocessor struct {
 	passthroughMode bool
 	rules           kube.ExtractionRules
 	filters         kube.Filters
+	podAssociations kube.Associations
 }
 
 func (kp *kubernetesprocessor) initKubeClient(logger *zap.Logger, kubeClient kube.ClientProvider) error {
@@ -45,7 +48,7 @@ func (kp *kubernetesprocessor) initKubeClient(logger *zap.Logger, kubeClient kub
 		kubeClient = kube.New
 	}
 	if !kp.passthroughMode {
-		kc, err := kubeClient(logger, kp.apiConfig, kp.rules, kp.filters, nil, nil)
+		kc, err := kubeClient(logger, kp.apiConfig, kp.rules, kp.filters, kp.podAssociations, nil, nil)
 		if err != nil {
 			return err
 		}
@@ -77,7 +80,7 @@ func (kp *kubernetesprocessor) ProcessTraces(ctx context.Context, td pdata.Trace
 			continue
 		}
 
-		kp.processResource(ctx, rs.Resource(), k8sIPFromAttributes())
+		kp.processResource(ctx, rs.Resource())
 	}
 
 	return td, nil
@@ -92,7 +95,7 @@ func (kp *kubernetesprocessor) ProcessMetrics(ctx context.Context, md pdata.Metr
 			continue
 		}
 
-		kp.processResource(ctx, ms.Resource(), k8sIPFromAttributes(), k8sIPFromHostnameAttributes())
+		kp.processResource(ctx, ms.Resource())
 	}
 
 	return md, nil
@@ -107,56 +110,33 @@ func (kp *kubernetesprocessor) ProcessLogs(ctx context.Context, ld pdata.Logs) (
 			continue
 		}
 
-		kp.processResource(ctx, ls.Resource(), k8sIPFromAttributes())
+		kp.processResource(ctx, ls.Resource())
 	}
 
 	return ld, nil
 }
 
-func (kp *kubernetesprocessor) processResource(ctx context.Context, resource pdata.Resource, attributeExtractors ...ipExtractor) {
-	var podIP string
+func (kp *kubernetesprocessor) processResource(ctx context.Context, resource pdata.Resource) {
 
-	for _, extractor := range attributeExtractors {
-		podIP = extractor(resource.Attributes())
-		if podIP != "" {
-			break
+	podAttributes := k8sPodAssociationFromAttributes(ctx, resource.Attributes(), kp.podAssociations)
+	if len(podAttributes) == 0 {
+		return
+	}
+	attrsToAdd := make(map[string]string)
+
+	for k, v := range podAttributes {
+		if !kp.passthroughMode {
+			attrsToAdd = kp.getAttributesForPod(v)
+			for key, val := range attrsToAdd {
+				resource.Attributes().InsertString(key, val)
+			}
 		}
-	}
-
-	// Check if the receiver detected client IP.
-	if podIP == "" {
-		if c, ok := client.FromContext(ctx); ok {
-			podIP = c.IP
-		}
-	}
-
-	// If IP is still not available by this point, nothing can be tagged here. Return.
-	if podIP == "" {
-		return
-	}
-
-	resource.Attributes().InsertString(k8sIPLabelName, podIP)
-
-	// Don't invoke any k8s client functionality in passthrough mode.
-	// Just tag the IP and forward the batch.
-	if kp.passthroughMode {
-		return
-	}
-
-	// add k8s tags to resource
-	attrsToAdd := kp.getAttributesForPodIP(podIP)
-	if len(attrsToAdd) == 0 {
-		return
-	}
-
-	attrs := resource.Attributes()
-	for k, v := range attrsToAdd {
-		attrs.InsertString(k, v)
+		resource.Attributes().InsertString(k, v)
 	}
 }
 
-func (kp *kubernetesprocessor) getAttributesForPodIP(ip string) map[string]string {
-	pod, ok := kp.kc.GetPodByIP(ip)
+func (kp *kubernetesprocessor) getAttributesForPod(association string) map[string]string {
+	pod, ok := kp.kc.GetPodByIP(association)
 	if !ok {
 		return nil
 	}

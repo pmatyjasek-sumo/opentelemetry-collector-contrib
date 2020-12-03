@@ -234,3 +234,17 @@ func WithFilterFields(filters ...FieldFilterConfig) Option {
 		return nil
 	}
 }
+
+func WithExtractPodAssociations(podAssociations ...PodAssociationConfig) Option {
+	return func(p *kubernetesprocessor) error {
+		associations := []kube.Association{}
+		for _, association := range podAssociations {
+			associations = append(associations, kube.Association{
+				From: association.From,
+				Name: association.Name,
+			})
+		}
+		p.podAssociations.Associations = associations
+		return nil
+	}
+}
