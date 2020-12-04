@@ -289,6 +289,12 @@ func withHostname(hostname string) generateResourceFunc {
 	}
 }
 
+func withPodUID(uid string) generateResourceFunc {
+	return func(res pdata.Resource) {
+		res.Attributes().InsertString("pod_uid", uid)
+	}
+}
+
 func TestIPDetectionFromContext(t *testing.T) {
 	m := newMultiTest(t, NewFactory().CreateDefaultConfig(), nil)
 
@@ -349,18 +355,6 @@ func TestProcessorNoAttrs(t *testing.T) {
 		kp.podAssociations = kube.Associations{
 			Associations: []kube.Association{
 				kube.Association{
-					From: "label",
-					Name: "pod_uid",
-				},
-				kube.Association{
-					From: "label",
-					Name: "k8s.pod.ip",
-				},
-				kube.Association{
-					From: "label",
-					Name: "host.hostname",
-				},
-				kube.Association{
 					From: "connection",
 					Name: "ip",
 				},
@@ -386,22 +380,6 @@ func TestProcessorNoAttrs(t *testing.T) {
 	m.kubernetesProcessorOperation(func(kp *kubernetesprocessor) {
 		kp.podAssociations = kube.Associations{
 			Associations: []kube.Association{
-				kube.Association{
-					From: "label",
-					Name: "pod_uid",
-				},
-				kube.Association{
-					From: "label",
-					Name: "k8s.pod.ip",
-				},
-				kube.Association{
-					From: "label",
-					Name: "host.hostname",
-				},
-				kube.Association{
-					From: "label",
-					Name: "ip",
-				},
 				kube.Association{
 					From: "connection",
 					Name: "ip",
@@ -501,10 +479,6 @@ func TestIPSource(t *testing.T) {
 			Associations: []kube.Association{
 				kube.Association{
 					From: "label",
-					Name: "pod_uid",
-				},
-				kube.Association{
-					From: "label",
 					Name: "k8s.pod.ip",
 				},
 				kube.Association{
@@ -554,6 +528,45 @@ func TestIPSource(t *testing.T) {
 	}
 }
 
+func TestPodUID(t *testing.T) {
+	m := newMultiTest(
+		t,
+		NewFactory().CreateDefaultConfig(),
+		nil,
+	)
+	m.kubernetesProcessorOperation(func(kp *kubernetesprocessor) {
+		kp.podAssociations = kube.Associations{
+			Associations: []kube.Association{
+				kube.Association{
+					From: "label",
+					Name: "pod_uid",
+				},
+			},
+		}
+		kp.kc.(*fakeClient).Pods["ef10d10b-2da5-4030-812e-5f45c1531227"] = &kube.Pod{
+			Name: "PodA",
+			Attributes: map[string]string{
+				"k":  "v",
+				"1":  "2",
+				"aa": "b",
+			},
+		}
+	})
+
+	m.testConsume(context.Background(),
+		generateTraces(withPodUID("ef10d10b-2da5-4030-812e-5f45c1531227")),
+		generateMetrics(withPodUID("ef10d10b-2da5-4030-812e-5f45c1531227")),
+		generateLogs(withPodUID("ef10d10b-2da5-4030-812e-5f45c1531227")),
+		nil)
+
+	m.assertBatchesLen(1)
+	m.assertResourceObjectLen(0, 1)
+	m.assertResource(0, 0, func(r pdata.Resource) {
+		require.Greater(t, r.Attributes().Len(), 0)
+		assertResourceHasStringAttribute(t, r, "k8s.pod.uid", "ef10d10b-2da5-4030-812e-5f45c1531227")
+	})
+}
+
 func TestProcessorAddLabels(t *testing.T) {
 	m := newMultiTest(
 		t,
@@ -574,18 +587,6 @@ func TestProcessorAddLabels(t *testing.T) {
 	m.kubernetesProcessorOperation(func(kp *kubernetesprocessor) {
 		kp.podAssociations = kube.Associations{
 			Associations: []kube.Association{
-				kube.Association{
-					From: "label",
-					Name: "pod_uid",
-				},
-				kube.Association{
-					From: "label",
-					Name: "k8s.pod.ip",
-				},
-				kube.Association{
-					From: "label",
-					Name: "host.hostname",
-				},
 				kube.Association{
 					From: "connection",
 					Name: "ip",
@@ -638,19 +639,7 @@ func TestProcessorPicksUpPassthoughPodIp(t *testing.T) {
 			Associations: []kube.Association{
 				kube.Association{
 					From: "label",
-					Name: "pod_uid",
-				},
-				kube.Association{
-					From: "label",
 					Name: "k8s.pod.ip",
-				},
-				kube.Association{
-					From: "label",
-					Name: "host.hostname",
-				},
-				kube.Association{
-					From: "connection",
-					Name: "ip",
 				},
 			},
 		}
@@ -698,19 +687,7 @@ func TestMetricsProcessorHostname(t *testing.T) {
 		Associations: []kube.Association{
 			kube.Association{
 				From: "label",
-				Name: "pod_uid",
-			},
-			kube.Association{
-				From: "label",
-				Name: "k8s.pod.ip",
-			},
-			kube.Association{
-				From: "label",
 				Name: "host.hostname",
-			},
-			kube.Association{
-				From: "connection",
-				Name: "ip",
 			},
 		},
 	}
