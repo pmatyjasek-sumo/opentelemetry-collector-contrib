@@ -19,6 +19,7 @@ import (
 	"net"
 
 	"github.com/open-telemetry/opentelemetry-collector-contrib/processor/k8sprocessor/kube"
+
 	"go.opentelemetry.io/collector/client"
 	"go.opentelemetry.io/collector/consumer/pdata"
 	"go.opentelemetry.io/collector/translator/conventions"

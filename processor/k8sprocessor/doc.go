@@ -16,12 +16,26 @@
 //
 // The processor automatically discovers k8s resources (pods), extracts metadata from them and adds the
 // extracted metadata to the relevant spans, metrics and logs. The processor use the kubernetes API to discover all pods
-// running in a cluster, keeps a record of their IP addresses and interesting metadata. Upon receiving telemetry data,
+// running in a cluster, keeps a record of their IP addresses, pod UIDs and interesting metadata. Upon receiving telemetry data,
 // the processor looks for presence of well-known resource attributes which might contain IP address ("ip",
-// "k8s.pod.ip" for logs, metrics or traces and "host.name" for metrics). If this field is not available, or it
-// does not contain a valid IP address, the processor tries to identify the source IP address of the service
-// that sent the telemetry data.
-// If a match is found, the cached metadata is added to the data as resource attributes.
+// "k8s.pod.ip" for logs, metrics or traces and "host.name" for metrics) or pod UID ("pod_uid").
+// If IP related field is not available, or it does not contain a valid IP address, the processor tries to
+// identify the source IP address of the service that sent the telemetry data.
+// If a match is found (for both IP and pod UID), the cached metadata is added to the data as resource attributes.
+// If there is no "pod_uid" field in telemetry data there is no possibility to add metadata as resource attributes.
+//
+// Pod association configuration
+// pod_association:
+//  - from: labels
+//    name: ip
+//  - from: labels
+//    name: k8s.pod.ip
+//  - from: labels
+//    name: host.hostname
+//  - from: connection
+//    name: ip
+//  - from: labels
+//    name: pod_uid
 //
 // RBAC
 //
