@@ -24,7 +24,7 @@
 // If a match is found (for both IP and pod UID), the cached metadata is added to the data as resource attributes.
 // If there is no "pod_uid" field in telemetry data there is no possibility to add metadata as resource attributes.
 //
-// Pod association configuration
+// Pod association configuration.
 // pod_association:
 //  - from: labels
 //    name: ip

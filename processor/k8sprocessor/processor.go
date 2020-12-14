@@ -135,8 +135,8 @@ func (kp *kubernetesprocessor) processResource(ctx context.Context, resource pda
 	}
 }
 
-func (kp *kubernetesprocessor) getAttributesForPod(association string) map[string]string {
-	pod, ok := kp.kc.GetPodByIP(association)
+func (kp *kubernetesprocessor) getAttributesForPod(identifier string) map[string]string {
+	pod, ok := kp.kc.GetPod(identifier)
 	if !ok {
 		return nil
 	}

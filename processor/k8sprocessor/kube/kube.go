@@ -46,7 +46,7 @@ var (
 
 // Client defines the main interface that allows querying pods by metadata.
 type Client interface {
-	GetPodByIP(string) (*Pod, bool)
+	GetPod(string) (*Pod, bool)
 	Start()
 	Stop()
 }

@@ -169,10 +169,10 @@ func (c *WatchClient) deleteLoop(interval time.Duration, gracePeriod time.Durati
 	}
 }
 
-// GetPodByIP takes an IP address and returns the pod the IP address is associated with.
-func (c *WatchClient) GetPodByIP(ip string) (*Pod, bool) {
+// GetPod takes an IP address or Pod UID and returns the pod the identifier is associated with.
+func (c *WatchClient) GetPod(identifier string) (*Pod, bool) {
 	c.m.RLock()
-	pod, ok := c.Pods[ip]
+	pod, ok := c.Pods[identifier]
 	c.m.RUnlock()
 	if ok {
 		if pod.Ignore {
@@ -285,11 +285,12 @@ func (c *WatchClient) addOrUpdatePod(pod *api_v1.Pod) {
 }
 
 func (c *WatchClient) forgetPod(pod *api_v1.Pod) {
+	// TODO: Remove pod by UID
 	if pod.Status.PodIP == "" {
 		return
 	}
 	c.m.RLock()
-	p, ok := c.GetPodByIP(pod.Status.PodIP)
+	p, ok := c.GetPod(pod.Status.PodIP)
 	c.m.RUnlock()
 
 	if ok && p.Name == pod.Name {

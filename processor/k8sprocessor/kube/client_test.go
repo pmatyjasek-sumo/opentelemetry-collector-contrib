@@ -286,7 +286,7 @@ func TestGetIgnoredPod(t *testing.T) {
 	pod.Status.PodIP = "1.1.1.1"
 	c.handlePodAdd(pod)
 	c.Pods[pod.Status.PodIP].Ignore = true
-	got, ok := c.GetPodByIP(pod.Status.PodIP)
+	got, ok := c.GetPod(pod.Status.PodIP)
 	assert.Nil(t, got)
 	assert.False(t, ok)
 }
@@ -394,7 +394,7 @@ func TestExtractionRules(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			c.Rules = tc.rules
 			c.handlePodAdd(pod)
-			p, ok := c.GetPodByIP(pod.Status.PodIP)
+			p, ok := c.GetPod(pod.Status.PodIP)
 			require.True(t, ok)
 
 			assert.Equal(t, len(tc.attributes), len(p.Attributes))
