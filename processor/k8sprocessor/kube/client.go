@@ -271,7 +271,7 @@ func (c *WatchClient) addOrUpdatePod(pod *api_v1.Pod) {
 		// compare initial scheduled timestamp for existing pod and new pod with same IP
 		// and only replace old pod if scheduled time of new pod is newer? This should fix
 		// the case where scheduler has assigned the same IP to a new pod but update event for
-		// the old pod came in later
+		// the old pod came in later.
 		func() {
 			if p, ok := c.Pods[pod.Status.PodIP]; ok {
 				if p.StartTime != nil && pod.Status.StartTime.Before(p.StartTime) {

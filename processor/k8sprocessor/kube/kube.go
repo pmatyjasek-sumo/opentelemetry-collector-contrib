@@ -72,6 +72,7 @@ type Pod struct {
 type deleteRequest struct {
 	ip   string
 	name string
+	uid  string
 	ts   time.Time
 }
 
@@ -126,10 +127,12 @@ type FieldExtractionRule struct {
 	Regex *regexp.Regexp
 }
 
+// Associations represents list of rules for associate Pod metadata with resource
 type Associations struct {
 	Associations []Association
 }
 
+// Association represents one association rule
 type Association struct {
 	From string
 	Name string

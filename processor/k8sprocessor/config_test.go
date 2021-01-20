@@ -89,5 +89,27 @@ func TestLoadConfig(t *testing.T) {
 					{Key: "key2", Value: "value2", Op: "not-equals"},
 				},
 			},
+			Association: []PodAssociationConfig{
+				PodAssociationConfig{
+					From: "labels",
+					Name: "ip",
+				},
+				PodAssociationConfig{
+					From: "labels",
+					Name: "k8s.pod.ip",
+				},
+				PodAssociationConfig{
+					From: "labels",
+					Name: "host.hostname",
+				},
+				PodAssociationConfig{
+					From: "connection",
+					Name: "ip",
+				},
+				PodAssociationConfig{
+					From: "labels",
+					Name: "pod_uid",
+				},
+			},
 		})
 }

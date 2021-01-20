@@ -36,27 +36,33 @@ func k8sPodAssociationFromAttributes(ctx context.Context, attrs pdata.AttributeM
 	}
 
 	for _, asso := range associations.Associations {
-		if asso.Name == "pod_uid" {
+		if asso.Name == podUIDLabelName {
 			uid := stringAttributeFromMap(attrs, asso.Name)
 			if uid != "" {
 				podAssociation[k8sPodUIDLabelName] = uid
 			}
 		}
 		if _, ok := podAssociation[k8sIPLabelName]; !ok {
-			if asso.Name == "k8s.pod.ip" && pod_ip != "" {
+			if asso.Name == k8sIPLabelName && pod_ip != "" {
 				podAssociation[k8sIPLabelName] = pod_ip
 				continue
 			}
-			if asso.Name == "ip" && asso.From == "label" && client_ip != "" {
-				podAssociation[k8sIPLabelName] = client_ip
-				continue
-			}
-			if asso.Name == "ip" && asso.From == "connection" && context_ip != "" {
-				podAssociation[k8sIPLabelName] = context_ip
-				continue
+			if asso.Name == "ip" {
+				switch asso.From {
+				case "label":
+					if client_ip != "" {
+						podAssociation[k8sIPLabelName] = client_ip
+					}
+				case "connection":
+					if context_ip != "" {
+						podAssociation[k8sIPLabelName] = context_ip
+					}
+				default:
+					continue
+				}
 			}
 		}
-		if asso.Name == "host.hostname" {
+		if asso.Name == hostnameLabelName {
 			hostname := stringAttributeFromMap(attrs, conventions.AttributeHostName)
 			if net.ParseIP(hostname) != nil {
 				podAssociation[k8sIPLabelName] = hostname
