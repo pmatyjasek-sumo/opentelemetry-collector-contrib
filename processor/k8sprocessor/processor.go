@@ -122,11 +122,9 @@ func (kp *kubernetesprocessor) processResource(ctx context.Context, resource pda
 	if len(podAttributes) == 0 {
 		return
 	}
-	attrsToAdd := make(map[string]string)
-
 	for k, v := range podAttributes {
 		if !kp.passthroughMode {
-			attrsToAdd = kp.getAttributesForPod(v)
+			attrsToAdd := kp.getAttributesForPod(v)
 			for key, val := range attrsToAdd {
 				resource.Attributes().InsertString(key, val)
 			}

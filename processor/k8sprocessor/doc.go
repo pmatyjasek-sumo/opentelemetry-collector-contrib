@@ -15,15 +15,15 @@
 // Package k8sprocessor allow automatic tagging of spans, metrics and logs with k8s metadata.
 //
 // The processor automatically discovers k8s resources (pods), extracts metadata from them and adds the
-// extracted metadata to the relevant spans, metrics and logs. The processor use the kubernetes API to discover all pods
+// extracted metadata to the relevant spans, metrics and logs. The processor uses the kubernetes API to discover all pods
 // running in a cluster, keeps a record of their IP addresses, pod UIDs and interesting metadata.
 // The rules for associating the source record with specific Pod Metadata are configured via "pod_association" key.
 // It represents a list of rules that are executed in order until the first one is able to do the match.
 // Each rule is specified as a pair of from (representing the rule type) and name (representing the extracted key name).
 // Following rule types are available:
-// 	  from: "labels" - takes the attribute from resource attributes (the value can contain either IP address or Pod UID)
-// 	  from: "connection" - takes the IP attribute from connection context (if available) and automatically
-// 						   associates it with "k8s.pod.ip" attribute
+//   from: "labels" - takes the attribute from resource attributes (the value can contain either IP address or Pod UID)
+//   from: "connection" - takes the IP attribute from connection context (if available) and automatically
+//     associates it with "k8s.pod.ip" attribute
 // Pod association configuration.
 // pod_association:
 //  - from: labels

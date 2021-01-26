@@ -127,7 +127,7 @@ type FieldExtractionRule struct {
 	Regex *regexp.Regexp
 }
 
-// Associations represents list of rules for associate Pod metadata with resource
+// Associations represent a list of rules for Pod metadata associations with resources
 type Associations struct {
 	Associations []Association
 }

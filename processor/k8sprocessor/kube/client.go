@@ -57,7 +57,14 @@ var dRegex = regexp.MustCompile(`^(.*)-[0-9a-zA-Z]*-[0-9a-zA-Z]*$`)
 
 // New initializes a new k8s Client.
 func New(logger *zap.Logger, apiCfg k8sconfig.APIConfig, rules ExtractionRules, filters Filters, associations Associations, newClientSet APIClientsetProvider, newInformer InformerProvider) (Client, error) {
-	c := &WatchClient{logger: logger, Rules: rules, Filters: filters, Associations: associations, deploymentRegex: dRegex, stopCh: make(chan struct{})}
+	c := &WatchClient{
+		logger:          logger,
+		Rules:           rules,
+		Filters:         filters,
+		Associations:    associations,
+		deploymentRegex: dRegex,
+		stopCh:          make(chan struct{}),
+	}
 	go c.deleteLoop(time.Second*30, defaultPodDeleteGracePeriod)
 
 	c.Pods = map[string]*Pod{}
