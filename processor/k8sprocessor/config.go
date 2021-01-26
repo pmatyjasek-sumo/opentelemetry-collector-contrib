@@ -176,7 +176,14 @@ type FieldFilterConfig struct {
 	Op string `mapstructure:"op"`
 }
 
+// PodAssociationConfig allows specyfying rules for associate resources
+// with pod metadata
 type PodAssociationConfig struct {
+	// From represents the source of the association.
+	// Allowed values are connection and label
 	From string `mapstructure:"from"`
+
+	// Name represents the name of the association.
+	// e.g. ip, pod_uid
 	Name string `mapstructure:"name"`
 }
