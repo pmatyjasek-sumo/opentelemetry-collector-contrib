@@ -176,7 +176,7 @@ type FieldFilterConfig struct {
 	Op string `mapstructure:"op"`
 }
 
-// PodAssociationConfig allows specyfying rules for associate resources
+// PodAssociationConfig allows specifying rules for associating resources
 // with pod metadata
 type PodAssociationConfig struct {
 	// From represents the source of the association.
