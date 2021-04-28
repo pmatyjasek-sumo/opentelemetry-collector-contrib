@@ -216,7 +216,7 @@ var _ component.TracesReceiver = (*sapmReceiver)(nil)
 // New creates a sapmReceiver that receives SAPM over http
 func New(
 	ctx context.Context,
-	params component.ReceiverCreateParams,
+	componentSettings component.ComponentSettings,
 	config *Config,
 	nextConsumer consumer.Traces,
 ) (component.TracesReceiver, error) {
@@ -227,7 +227,7 @@ func New(
 		return nil, fmt.Errorf("failed to marshal default response body for %s receiver: %v", config.Name(), err)
 	}
 	return &sapmReceiver{
-		logger:          params.Logger,
+		logger:          componentSettings.Logger,
 		config:          config,
 		nextConsumer:    nextConsumer,
 		defaultResponse: defaultResponseBytes,

@@ -51,7 +51,7 @@ func createDefaultConfig() config.Receiver {
 }
 
 func createMetricsReceiver(
-	_ context.Context, params component.ReceiverCreateParams, cfg config.Receiver,
+	_ context.Context, componentSettings component.ComponentSettings, cfg config.Receiver,
 	consumer consumer.Metrics) (component.MetricsReceiver, error) {
 	rCfg := cfg.(*Config)
 
@@ -59,7 +59,7 @@ func createMetricsReceiver(
 	if err != nil {
 		return nil, err
 	}
-	return newReceiver(params.Logger, rCfg, consumer, k8sClient)
+	return newReceiver(componentSettings.Logger, rCfg, consumer, k8sClient)
 }
 
 // NewFactory creates a factory for k8s_cluster receiver.

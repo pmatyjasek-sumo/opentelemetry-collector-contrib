@@ -24,7 +24,7 @@ import (
 )
 
 func Test_loadAndCreateRuntimeReceiver(t *testing.T) {
-	run := &receiverRunner{params: component.ReceiverCreateParams{Logger: zap.NewNop()}, idNamespace: "receiver_creator/1"}
+	run := &receiverRunner{componentSettings: component.ComponentSettings{Logger: zap.NewNop()}, idNamespace: "receiver_creator/1"}
 	exampleFactory := &nopWithEndpointFactory{}
 	template, err := newReceiverTemplate("nop/1", nil)
 	require.NoError(t, err)

@@ -58,7 +58,7 @@ func createDefaultConfig() config.Receiver {
 
 func createMetricsReceiver(
 	ctx context.Context,
-	params component.ReceiverCreateParams,
+	componentSettings component.ComponentSettings,
 	cfg config.Receiver,
 	consumer consumer.Metrics,
 ) (component.MetricsReceiver, error) {
@@ -85,5 +85,5 @@ func createMetricsReceiver(
 			},
 		},
 	}
-	return carbonreceiver.New(params.Logger, carbonCfg, consumer)
+	return carbonreceiver.New(componentSettings.Logger, carbonCfg, consumer)
 }

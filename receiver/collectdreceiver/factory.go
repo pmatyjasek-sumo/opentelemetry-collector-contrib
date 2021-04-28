@@ -59,7 +59,7 @@ func createDefaultConfig() config.Receiver {
 
 func createMetricsReceiver(
 	_ context.Context,
-	params component.ReceiverCreateParams,
+	componentSettings component.ComponentSettings,
 	cfg config.Receiver,
 	nextConsumer consumer.Metrics,
 ) (component.MetricsReceiver, error) {
@@ -73,5 +73,5 @@ func createMetricsReceiver(
 			c.Encoding,
 		)
 	}
-	return newCollectdReceiver(params.Logger, c.Endpoint, c.Timeout, c.AttributesPrefix, nextConsumer)
+	return newCollectdReceiver(componentSettings.Logger, c.Endpoint, c.Timeout, c.AttributesPrefix, nextConsumer)
 }

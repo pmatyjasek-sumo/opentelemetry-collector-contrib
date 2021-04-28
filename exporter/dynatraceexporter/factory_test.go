@@ -115,7 +115,7 @@ func TestCreateAPIMetricsExporter(t *testing.T) {
 	ctx := context.Background()
 	exp, err := factory.CreateMetricsExporter(
 		ctx,
-		component.ExporterCreateParams{Logger: logger},
+		component.ComponentSettings{Logger: logger},
 		cfg.Exporters["dynatrace/valid"],
 	)
 
@@ -142,7 +142,7 @@ func TestCreateAPIMetricsExporterInvalid(t *testing.T) {
 	ctx := context.Background()
 	exp, err := factory.CreateMetricsExporter(
 		ctx,
-		component.ExporterCreateParams{Logger: logger},
+		component.ComponentSettings{Logger: logger},
 		cfg.Exporters["dynatrace/invalid"],
 	)
 

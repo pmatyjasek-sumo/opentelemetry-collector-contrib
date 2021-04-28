@@ -92,7 +92,7 @@ func (rCfg *Config) validate() error {
 // createMetricsReceiver creates a metrics receiver based on provided config.
 func createMetricsReceiver(
 	_ context.Context,
-	params component.ReceiverCreateParams,
+	componentSettings component.ComponentSettings,
 	cfg config.Receiver,
 	consumer consumer.Metrics,
 ) (component.MetricsReceiver, error) {
@@ -106,7 +106,7 @@ func createMetricsReceiver(
 	receiverLock.Lock()
 	r := receivers[rCfg]
 	if r == nil {
-		r = newReceiver(params.Logger, *rCfg)
+		r = newReceiver(componentSettings.Logger, *rCfg)
 		receivers[rCfg] = r
 	}
 	receiverLock.Unlock()
@@ -119,7 +119,7 @@ func createMetricsReceiver(
 // createLogsReceiver creates a logs receiver based on provided config.
 func createLogsReceiver(
 	_ context.Context,
-	params component.ReceiverCreateParams,
+	componentSettings component.ComponentSettings,
 	cfg config.Receiver,
 	consumer consumer.Logs,
 ) (component.LogsReceiver, error) {
@@ -133,7 +133,7 @@ func createLogsReceiver(
 	receiverLock.Lock()
 	r := receivers[rCfg]
 	if r == nil {
-		r = newReceiver(params.Logger, *rCfg)
+		r = newReceiver(componentSettings.Logger, *rCfg)
 		receivers[rCfg] = r
 	}
 	receiverLock.Unlock()

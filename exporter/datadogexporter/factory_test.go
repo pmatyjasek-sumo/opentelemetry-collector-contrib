@@ -334,7 +334,7 @@ func TestCreateAPIMetricsExporter(t *testing.T) {
 	ctx := context.Background()
 	exp, err := factory.CreateMetricsExporter(
 		ctx,
-		component.ExporterCreateParams{Logger: logger},
+		component.ComponentSettings{Logger: logger},
 		cfg.Exporters["datadog/api"],
 	)
 
@@ -366,7 +366,7 @@ func TestCreateAPITracesExporter(t *testing.T) {
 	ctx := context.Background()
 	exp, err := factory.CreateTracesExporter(
 		ctx,
-		component.ExporterCreateParams{Logger: logger},
+		component.ComponentSettings{Logger: logger},
 		cfg.Exporters["datadog/api"],
 	)
 
@@ -399,7 +399,7 @@ func TestOnlyMetadata(t *testing.T) {
 
 	expTraces, err := factory.CreateTracesExporter(
 		ctx,
-		component.ExporterCreateParams{Logger: logger},
+		component.ComponentSettings{Logger: logger},
 		cfg,
 	)
 	assert.NoError(t, err)
@@ -407,7 +407,7 @@ func TestOnlyMetadata(t *testing.T) {
 
 	expMetrics, err := factory.CreateMetricsExporter(
 		ctx,
-		component.ExporterCreateParams{Logger: logger},
+		component.ComponentSettings{Logger: logger},
 		cfg,
 	)
 	assert.NoError(t, err)

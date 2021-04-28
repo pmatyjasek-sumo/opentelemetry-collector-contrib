@@ -63,7 +63,7 @@ func createDefaultConfig() config.Receiver {
 
 func createMetricsReceiver(
 	_ context.Context,
-	params component.ReceiverCreateParams,
+	componentSettings component.ComponentSettings,
 	cfg config.Receiver,
 	consumer consumer.Metrics,
 ) (component.MetricsReceiver, error) {
@@ -72,5 +72,5 @@ func createMetricsReceiver(
 	if err != nil {
 		return nil, err
 	}
-	return New(params.Logger, *c, consumer)
+	return New(componentSettings.Logger, *c, consumer)
 }

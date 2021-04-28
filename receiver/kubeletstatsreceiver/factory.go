@@ -63,7 +63,7 @@ func createDefaultConfig() config.Receiver {
 
 func createMetricsReceiver(
 	ctx context.Context,
-	params component.ReceiverCreateParams,
+	componentSettings component.ComponentSettings,
 	baseCfg config.Receiver,
 	consumer consumer.Metrics,
 ) (component.MetricsReceiver, error) {
@@ -72,12 +72,12 @@ func createMetricsReceiver(
 	if err != nil {
 		return nil, err
 	}
-	rest, err := restClient(params.Logger, cfg)
+	rest, err := restClient(componentSettings.Logger, cfg)
 	if err != nil {
 		return nil, err
 	}
 
-	return newReceiver(rOptions, params.Logger, rest, consumer), nil
+	return newReceiver(rOptions, componentSettings.Logger, rest, consumer), nil
 }
 
 func restClient(logger *zap.Logger, cfg *Config) (kubelet.RestClient, error) {
